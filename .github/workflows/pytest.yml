@@ -1,0 +1,18 @@
+name: PyTest
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python:3.6
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install poetry dependencies
+        run: pip install poetry
+
+      - name: Install project
+        run: poetry install
+
+      - name: Run test suite
+        run: poetry run pytest -v

@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "bofhound"
+version = "0.0.1"
+description = "Parse output from common sources and transform it into BloodHound-ingestible data"
+authors = [
+	"Adam Brown",
+	"Matt Creel"
+]
+readme = "README.md"
+homepage = "https://github.com/fortalice/bofhound"
+repository = "https://github.com/fortalice/bofhound"
+include = ["CHANGELOG.md"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = "8.0.3"
+typer = "^0.4.0"
+bloodhound = "1.2.1"
+cffi = "1.15.0"
+chardet = "4.0.0"
+cryptography = "36.0.1"
+dnspython = "2.2.0"
+Flask = "2.0.2"
+future = "0.18.2"
+impacket = "0.9.24"
+itsdangerous = "2.0.1"
+Jinja2 = "3.0.3"
+ldap3 = "2.9.1"
+ldapdomaindump = "0.9.3"
+MarkupSafe = "2.0.1"
+pyasn1 = "0.4.8"
+pycparser = "2.21"
+pycryptodomex = "3.14.0"
+pyOpenSSL = "22.0.0"
+six = "1.16.0"
+Werkzeug = "2.0.2"
+rich = "12.2.0"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.13"
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+bofhound = "bofhound.__main__:app"
