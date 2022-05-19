@@ -52,7 +52,7 @@ bofhound -i ~/.pyldapsearch/logs/ --all-properties
 # ldapsearch Query Examples
 
 ## Required Data
-The followign attributes are required for proper functionality:
+The following attributes are required for proper functionality:
 
 ```
 samaccounttype
