@@ -15,6 +15,7 @@ class BloodHoundDomain(BloodHoundObject):
         super().__init__(object)
 
         self._entry_type = "Domain"
+        self.GPLinks = []
         level_id = object.get('msds-behavior-version', 0)
         try:
             functional_level = ADUtils.FUNCTIONAL_LEVELS[int(level_id)]
@@ -39,6 +40,10 @@ class BloodHoundDomain(BloodHoundObject):
 
         if 'ntsecuritydescriptor' in object.keys():
             self.RawAces = object['ntsecuritydescriptor']
+        
+        if 'gplink' in object.keys():
+            # [['DN1', 'GPLinkOptions1'], ['DN2', 'GPLinkOptions2'], ...]
+            self.GPLinks = [link.upper()[:-1].split(';') for link in object.get('gplink').split('[LDAP//')][1:]
 
         self.Properties["highvalue"] = True
 
@@ -58,6 +63,7 @@ class BloodHoundDomain(BloodHoundObject):
         self.IsDeleted = False
         self.IsACLProtected = False
 
+
     def to_json(self, only_common_properties=True):
         domain = super().to_json(only_common_properties)
 
@@ -72,3 +78,9 @@ class BloodHoundDomain(BloodHoundObject):
         domain["IsACLProtected"] = self.IsACLProtected
 
         return domain
+
+
+    @staticmethod
+    def parse_trusted_domain(object, domains):
+        print('Total domains ' + len(domains))
+        print(object.keys())

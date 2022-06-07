@@ -76,9 +76,6 @@ class BloodHoundComputer(BloodHoundObject):
         # TODO: HighValue / AdminCount
         self.Properties['highvalue'] = False
 
-        if 'distinguishedname' in object.keys():
-            self.Properties['distinguishedname'] = object.get('distinguishedname')
-
         if 'ms-mcs-admpwdexpirationtime' in object.keys():
             self.Properties['haslaps'] = True
 

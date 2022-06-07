@@ -119,6 +119,7 @@ class BloodHoundObject():
 
         return data
 
+
     def __parse_whencreated(self, object):
         whencreated = object.get('whencreated', 0)
         try:
@@ -127,6 +128,28 @@ class BloodHoundObject():
             self.Properties['whencreated'] = whencreated
         except:
             self.Properties['whencreated'] = whencreated
+
+
+    # used by Domains and OUs
+    def add_linked_gpo(self, object, gp_link_options):
+        enforced = False
+        if gp_link_options == '2':
+            enforced = True
+
+        link = {
+            "GUID": object.ObjectIdentifier,
+            "IsEnforced": False
+        }
+        self.Links.append(link)
+
+
+    # used by Domains and OUs
+    def add_ou_member(self, object, object_type):
+        member = {
+            "ObjectIdentifier": object.ObjectIdentifier,
+            "ObjectType": object_type
+        }
+        self.ChildObjects.append(member)
 
 
     @staticmethod
