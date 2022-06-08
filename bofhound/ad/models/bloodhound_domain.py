@@ -78,9 +78,3 @@ class BloodHoundDomain(BloodHoundObject):
         domain["IsACLProtected"] = self.IsACLProtected
 
         return domain
-
-
-    @staticmethod
-    def parse_trusted_domain(object, domains):
-        print('Total domains ' + len(domains))
-        print(object.keys())
