@@ -44,8 +44,8 @@ def test_import_objects_expectedValuesFromStandardDataSet(testdata_ldapsearchbof
     adds = ADDS()
     adds.import_objects(testdata_ldapsearchbof_beacon_257_objects)
 
-    assert len(adds.SID_MAP) == 63
-    assert len(adds.DN_MAP) == 63
+    assert len(adds.SID_MAP) == 68
+    assert len(adds.DN_MAP) == 68
     assert len(adds.DOMAIN_MAP) == 1
     assert len(adds.users) == 4
     assert len(adds.computers) == 4
@@ -53,7 +53,9 @@ def test_import_objects_expectedValuesFromStandardDataSet(testdata_ldapsearchbof
     assert len(adds.domains) == 1
     assert len(adds.schemas) == 0
     assert len(adds.trustaccounts) == 0
-    assert len(adds.unknown_objects) == 194
+    assert len(adds.ous) == 1
+    assert len(adds.gpos) == 4
+    assert len(adds.unknown_objects) == 189
 
 
 def test_import_objects_MinimalObject(raw_user):

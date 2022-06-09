@@ -71,6 +71,8 @@ def main(
     logging.info(f"Parsed {len(ad.computers)} Computers")
     logging.info(f"Parsed {len(ad.domains)} Domains")
     logging.info(f"Parsed {len(ad.trustaccounts)} Trust Accounts")
+    logging.info(f"Parsed {len(ad.ous)} OUs")
+    logging.info(f"Parsed {len(ad.gpos)} GPOs")
     logging.info(f"Parsed {len(ad.schemas)} Schemas")
     logging.info(f"Parsed {len(ad.unknown_objects)} Unknown Objects")
 
@@ -82,6 +84,8 @@ def main(
         computers=ad.computers,
         users=ad.users,
         groups=ad.groups,
+        ous=ad.ous,
+        gpos=ad.gpos,
         common_properties_only=(not all_properties),
         zip_files=zip_files
     )

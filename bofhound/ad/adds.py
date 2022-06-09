@@ -3,7 +3,7 @@ import logging
 from io import BytesIO
 from bloodhound.ad.utils import ADUtils
 from bloodhound.enumeration.acls import SecurityDescriptor, ACL, ACCESS_ALLOWED_ACE, ACCESS_MASK, ACE, ACCESS_ALLOWED_OBJECT_ACE, has_extended_right, EXTRIGHTS_GUID_MAPPING, can_write_property, ace_applies
-from bofhound.ad.models import BloodHoundComputer, BloodHoundDomain, BloodHoundGroup, BloodHoundObject, BloodHoundSchema, BloodHoundUser
+from bofhound.ad.models import BloodHoundComputer, BloodHoundDomain, BloodHoundGroup, BloodHoundObject, BloodHoundSchema, BloodHoundUser, BloodHoundOU, BloodHoundGPO, BloodHoundDomainTrust
 from bofhound.logger import OBJ_EXTRA_FMT, ColorScheme
 from bofhound import console
 
@@ -18,6 +18,8 @@ class ADDS():
     AT_NAME = "name"
     AT_COMMONNAME = "cn"
     AT_SAMACCOUNTNAME = "samaccountname"
+    AT_ORGUNIT = "ou"
+    AT_OBJECTGUID = "objectguid"
 
 
     def __init__(self):
@@ -30,7 +32,10 @@ class ADDS():
         self.users = []
         self.computers = []
         self.groups = []
+        self.ous = []
+        self.gpos = []
         self.schemas = []
+        self.trusts = []
         self.trustaccounts = []
         self.unknown_objects = []
 
@@ -61,13 +66,14 @@ class ADDS():
 
             dn = object.get(ADDS.AT_DISTINGUISHEDNAME, None)
             sid = object.get(ADDS.AT_OBJECTID, None)
+            guid = object.get(ADDS.AT_OBJECTGUID, None)
 
             # SID and DN are required attributes for bofhound objects
-            if dn is None or sid is None:
+            if dn is None or (sid is None and guid is None):
                 self.unknown_objects.append(object)
                 continue
 
-            originalObject = self.retrieve_object(dn, sid)
+            originalObject = self.retrieve_object(dn.upper(), sid)
             bhObject = None
 
             # Groups
@@ -98,6 +104,18 @@ class ADDS():
                     bhObject = BloodHoundDomain(object)
                     self.add_domain(bhObject)
                     target_list = self.domains
+                # grab domain trusts
+                elif 'trustedDomain' in object_class:
+                    bhObject = BloodHoundDomainTrust(object)
+                    bhObject.set_temporary_sid(len(self.trusts))
+                    target_list = self.trusts
+                # grab OUs
+                elif 'top, organizationalUnit' in object_class:
+                    bhObject = BloodHoundOU(object)
+                    target_list = self.ous
+                elif 'container, groupPolicyContainer' in object_class:
+                    bhObject = BloodHoundGPO(object)
+                    target_list = self.gpos
                 # some well known SIDs dont return the accounttype property
                 elif object.get(ADDS.AT_NAME) in ADUtils.WELLKNOWN_SIDS:
                     bhObject, target_list =  self._lookup_known_sid(object, object.get(ADDS.AT_NAME))
@@ -115,7 +133,8 @@ class ADDS():
                     originalObject.merge_entry(bhObject)
             elif bhObject:
                 target_list.append(bhObject)
-                self.add_object_to_maps(bhObject)
+                if not isinstance(bhObject, BloodHoundDomainTrust): # trusts don't have SIDs
+                    self.add_object_to_maps(bhObject)
 
 
     def add_object_to_maps(self, object:BloodHoundObject):
@@ -174,7 +193,7 @@ class ADDS():
 
 
     def process(self):
-        all_objects = self.users + self.groups + self.computers + self.domains
+        all_objects = self.users + self.groups + self.computers + self.domains + self.ous + self.gpos
 
         num_parsed_relations = 0
         with console.status(f" [bold] Processed {num_parsed_relations} ACLs", spinner="aesthetic") as status:
@@ -200,6 +219,19 @@ class ADDS():
         with console.status(" [bold] Resolving delegation relationships", spinner="aesthetic"):
             self.resolve_delegation_targets()
         logging.info("Resolved delegation relationships")
+
+        with console.status(" [bold] Resolving OU memberships", spinner="aesthetic"):
+            self.resolve_ou_members()
+        logging.info("Resolved OU memberships")
+
+        with console.status(" [bold] Linking GPOs to OUs", spinner="aesthetic"):
+            self.link_gpos()
+        logging.info("Linked GPOs to OUs")
+
+        if len(self.trusts) > 0:
+            with console.status(" [bold] Resolving domain trusts", spinner="aesthetic"):
+                self.resolve_domain_trusts()
+            logging.info("Resolved domain trusts")
 
 
     def resolve_delegation_targets(self):
@@ -361,6 +393,70 @@ class ADDS():
                 if self._is_nested_group(subgroup, group):
                     group.add_group_member(subgroup, "Group")
                     logging.debug(f"Resolved {ColorScheme.group}{subgroup.Properties['name']}[/] as nested member of {ColorScheme.group}{group.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+
+    
+    def resolve_ou_members(self):
+        for user in self.users:
+            ou = self._resolve_object_ou(user)
+            if ou is not None:
+                ou.add_ou_member(user, "User")
+                logging.debug(f"Identified {ColorScheme.user}{user.Properties['name']}[/] as within OU {ColorScheme.ou}{ou.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+
+        for group in self.groups:
+            ou = self._resolve_object_ou(group)
+            if ou is not None:
+                ou.add_ou_member(group, "Group")
+                logging.debug(f"Identified {ColorScheme.group}{group.Properties['name']}[/] as within OU {ColorScheme.ou}{ou.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+
+        for computer in self.computers:
+            ou = self._resolve_object_ou(computer)
+            if ou is not None:
+                ou.add_ou_member(computer, "Computer")
+                logging.debug(f"Identified {ColorScheme.computer}{computer.Properties['name']}[/] as within OU {ColorScheme.ou}{ou.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+
+        for nested_ou in self.ous:
+            ou = self._resolve_nested_ou(nested_ou)
+            if ou is not None:
+                ou.add_ou_member(nested_ou, "OU")
+                logging.debug(f"Identified {ColorScheme.ou}{nested_ou.Properties['name']}[/] as within OU {ColorScheme.ou}{ou.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+
+
+    def link_gpos(self):
+        for object in self.ous + self.domains:
+            if object._entry_type == 'OU':
+                self.add_domainsid_prop(object) # since OUs don't have a SID to get a domainsid from
+
+            for gplink in object.GPLinks:
+                if gplink[0] in self.DN_MAP.keys():
+                    gpo = self.DN_MAP[gplink[0]]
+                    object.add_linked_gpo(gpo, gplink[1])
+
+                    if object._entry_type == 'Domain':
+                       logging.debug(f"Linked {ColorScheme.gpo}{gpo.Properties['name']}[/] to domain {ColorScheme.domain}{object.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+                    else:
+                        logging.debug(f"Linked {ColorScheme.gpo}{gpo.Properties['name']}[/] to OU {ColorScheme.ou}{object.Properties['name']}[/]", extra=OBJ_EXTRA_FMT)
+    
+
+    def resolve_domain_trusts(self):
+        for trust in self.trusts:
+            if trust.TrustProperties is not None:
+                # Start by trying to add the target domain's sid if we have it
+                target_domain_dn = ADUtils.domain2ldap(trust.TrustProperties['TargetDomainName'])
+                if target_domain_dn in self.DOMAIN_MAP.keys():
+                    trust.TrustProperties['TargetDomainSid'] = self.DOMAIN_MAP[target_domain_dn]
+
+                # Append the trust dict to the origin domain's trust list
+                if trust.LocalDomainDn in self.DOMAIN_MAP.keys():
+                    for domain in self.domains:
+                        if trust.LocalDomainDn == domain.Properties['distinguishedname']:
+                            domain.Trusts.append(trust.TrustProperties)
+                            break
+
+
+    def add_domainsid_prop(self, object):
+        dc = BloodHoundObject.get_domain_component(object.Properties["distinguishedname"])
+        if dc in self.DOMAIN_MAP.keys():
+            object.Properties["domainsid"] = self.DOMAIN_MAP[dc]
 
 
     def resolve_trust_relationships(self):
@@ -566,6 +662,31 @@ class ADDS():
         except:
             pass
         return False
+
+
+    def _resolve_object_ou(self, object):
+        if "OU=" in object.Properties["distinguishedname"]:
+            target_ou = "OU=" + object.Properties["distinguishedname"].split("OU=", 1)[1]
+            for ou in self.ous:
+                if ou.Properties["distinguishedname"] == target_ou:
+                    return ou
+        return None
+
+    
+    def _resolve_nested_ou(self, nested_ou):
+        dn = nested_ou.Properties["distinguishedname"]
+        # else is top-level OU
+        if len(dn.split("OU=")) > 2:
+            target_ou = "OU=" + dn.split("OU=", 2)[2]
+            for ou in self.ous:
+                if ou.Properties["distinguishedname"] == target_ou:
+                    return ou
+        else:
+            dc = BloodHoundObject.get_domain_component(dn)
+            for domain in self.domains:
+                if dc == domain.Properties[self.AT_DISTINGUISHEDNAME]:
+                    return domain
+        return None
 
 
     def _lookup_known_sid(self, object, sid):

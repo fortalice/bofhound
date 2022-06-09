@@ -14,8 +14,8 @@ class BloodHoundWriter():
 
     @staticmethod
     def write(out_dir='.', domains=None, computers=None, users=None,
-          groups=None, trusts=None, trustaccounts=None, common_properties_only=True,
-          zip_files=False):
+          groups=None, ous=None, gpos=None, trusts=None, trustaccounts=None, 
+          common_properties_only=True, zip_files=False):
 
         os.makedirs(out_dir, exist_ok=True)
         BloodHoundWriter.ct = BloodHoundWriter.timestamp()
@@ -36,6 +36,14 @@ class BloodHoundWriter():
         if groups is not None:
             with console.status(" [bold] Writing groups to JSON...\n", spinner="aesthetic"):
                 BloodHoundWriter.write_groups_file(out_dir, groups, common_properties_only)
+
+        if ous is not None:
+            with console.status(" [bold] Writing OUs to JSON...\n", spinner="aesthetic"):
+                BloodHoundWriter.write_ous_file(out_dir, ous, common_properties_only)
+
+        if gpos is not None:
+            with console.status(" [bold] Writing GPOs to JSON...\n", spinner="aesthetic"):
+                BloodHoundWriter.write_gpos_file(out_dir, gpos, common_properties_only)
 
         if trusts is not None:
             BloodHoundWriter.write_trusts_file(out_dir, trusts, common_properties_only)
@@ -152,6 +160,56 @@ class BloodHoundWriter():
             datastruct['meta']['count'] += 1
 
         out_file = PurePath(out_dir, f'groups_{BloodHoundWriter.ct}.json')
+        BloodHoundWriter.files.append(out_file)
+        with codecs.open(out_file, 'w', 'utf-8') as f:
+            json.dump(datastruct, f)
+
+    
+    @staticmethod
+    def write_ous_file(out_dir, ous, common_properties_only):
+        if len(ous) == 0:
+            return
+
+        datastruct = {
+            "data": [],
+            "meta": {
+                "type": "ous",
+                "count": 0,
+                "methods": 0,
+                "version": 4
+            }
+        }
+
+        for ou in ous:
+            datastruct['data'].append(ou.to_json(common_properties_only))
+            datastruct['meta']['count'] += 1
+
+        out_file = PurePath(out_dir, f'ous_{BloodHoundWriter.ct}.json')
+        BloodHoundWriter.files.append(out_file)
+        with codecs.open(out_file, 'w', 'utf-8') as f:
+            json.dump(datastruct, f)
+
+
+    @staticmethod
+    def write_gpos_file(out_dir, gpos, common_properties_only):
+        if len(gpos) == 0:
+            return
+
+        datastruct = {
+            "data": [],
+            "meta": {
+                "type": "gpos",
+                "count": 0,
+                "methods": 0,
+                "version": 4
+            }
+        }
+
+        for gpo in gpos:
+            datastruct['data'].append(gpo.to_json(common_properties_only))
+            datastruct['meta']['count'] += 1
+
+        out_file = PurePath(out_dir, f'gpos_{BloodHoundWriter.ct}.json')
         BloodHoundWriter.files.append(out_file)
         with codecs.open(out_file, 'w', 'utf-8') as f:
             json.dump(datastruct, f)

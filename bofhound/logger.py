@@ -7,6 +7,8 @@ class ColorScheme:
     computer = "[red1]"
     group = "[gold1]"
     schema = "[deep_sky_blue1]"
+    ou = "[dark_orange]"
+    gpo = "[purple]"
 
 OBJ_EXTRA_FMT = {
     "markup": True,
