@@ -24,7 +24,7 @@ def raw_user():
 
 def test_import_objects_singleSchema():
     adds = ADDS()
-    adds.import_objects([{ADDS.AT_SCHEMAIDGUID: 'de9b4c5c-ff5a-4866-8501-caa2cd7c075c'}])
+    adds.import_objects([{ADDS.AT_SCHEMAIDGUID: 'ABWwRRnE0RG7yQCAx2ZwwA==', ADDS.AT_NAME: 'ANR'}])
 
     assert len(adds.schemas) == 1
 
