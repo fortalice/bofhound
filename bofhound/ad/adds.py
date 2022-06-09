@@ -46,9 +46,10 @@ class ADDS():
             schemaIdGuid = object.get(ADDS.AT_SCHEMAIDGUID, None)
             if schemaIdGuid:
                 new_schema = BloodHoundSchema(object)
-                self.schemas.append(new_schema)
-                if new_schema.Name not in self.ObjectTypeGuidMap.keys():
-                    self.ObjectTypeGuidMap[new_schema.Name] = new_schema.SchemaIdGuid
+                if new_schema.SchemaIdGuid is not None:
+                    self.schemas.append(new_schema)
+                    if new_schema.Name not in self.ObjectTypeGuidMap.keys():
+                        self.ObjectTypeGuidMap[new_schema.Name] = new_schema.SchemaIdGuid
                 continue
 
             accountType = int(object.get(ADDS.AT_SAMACCOUNTTYPE, 0))
@@ -371,7 +372,11 @@ class ADDS():
         if not entry.RawAces:
             return 0
 
-        value = base64.b64decode(entry.RawAces)
+        try:
+            value = base64.b64decode(entry.RawAces)
+        except:
+            logging.warning(f'Error base64 decoding nTSecurityDescriptor attribute on {entry._entry_type} {entry.Properties["name"]}')
+            return 0
 
         if not value:
             return 0

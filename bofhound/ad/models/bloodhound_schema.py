@@ -11,5 +11,8 @@ class BloodHoundSchema(object):
 
 		if 'name' in object.keys() and 'schemaidguid' in object.keys():
 			self.Name = object.get('name').lower()
-			self.SchemaIdGuid = str(UUID(bytes_le=base64.b64decode(object.get('schemaidguid')))).lower()
-			logging.debug(f"Reading Schema object {ColorScheme.schema}{self.Name}[/]", extra=OBJ_EXTRA_FMT)
+			try:
+				self.SchemaIdGuid = str(UUID(bytes_le=base64.b64decode(object.get('schemaidguid')))).lower()
+				logging.debug(f"Reading Schema object {ColorScheme.schema}{self.Name}[/]", extra=OBJ_EXTRA_FMT)
+			except:
+				logging.warning(f"Error base64 decoding SchemaIDGUID attribute on Schema {ColorScheme.schema}{self.Name}[/]", extra=OBJ_EXTRA_FMT)
