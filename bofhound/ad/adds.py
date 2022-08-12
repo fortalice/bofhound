@@ -449,7 +449,9 @@ class ADDS():
                 if trust.LocalDomainDn in self.DOMAIN_MAP.keys():
                     for domain in self.domains:
                         if trust.LocalDomainDn == domain.Properties['distinguishedname']:
-                            domain.Trusts.append(trust.TrustProperties)
+                            # don't add trust relationships more than once!
+                            if not any(prior['TargetDomainName'] == trust.TrustProperties['TargetDomainName'] for prior in domain.Trusts):
+                                domain.Trusts.append(trust.TrustProperties)
                             break
 
 
