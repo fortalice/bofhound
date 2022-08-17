@@ -1,4 +1,7 @@
 # Changelog
+## [v0.1.1] - 8/11/2022
+### Fixed
+- Bug where domain trusts queried more than once would appear duplicated in the BH UI
 
 ## [v0.1.0] - 6/9/2022
 ### Added
