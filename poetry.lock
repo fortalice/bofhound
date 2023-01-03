@@ -50,15 +50,14 @@ tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy"
 
 [[package]]
 name = "bloodhound"
-version = "1.2.1"
+version = "1.6.0"
 description = "Python based ingestor for BloodHound"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "bloodhound-1.2.1-py2-none-any.whl", hash = "sha256:2f45600d797e8905c04c53511ce8b93ad241fe77717269df542ee8777cdfddff"},
-    {file = "bloodhound-1.2.1-py3-none-any.whl", hash = "sha256:38dcc3c30118834bef8068aae1e079dc0ef6d74ddf23ce88f8e7126f5fb07d5b"},
-    {file = "bloodhound-1.2.1.tar.gz", hash = "sha256:73be03b93027f8bd71ee66c6f724fb3ae32c92ec5ca1927fecb56edbb092a737"},
+    {file = "bloodhound-1.6.0-py3-none-any.whl", hash = "sha256:c9cd801085f6a68c0cf9245bd68b7529988cca28b6f1cfcaa290542526d1cf2e"},
+    {file = "bloodhound-1.6.0.tar.gz", hash = "sha256:b6fd0d1ba58c23847f5fb485e88e925ce0a93c4b7e5d860db1b815f36af63fda"},
 ]
 
 [package.dependencies]
@@ -951,4 +950,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c61a3cc9f6390807ca605a511cb55191af307447d2fbbdfae01b22639fbdf1f4"
+content-hash = "6d418cce6f7b8231b9cb0b9495f431231055ccf32969d19f6a01e4fa444cf4b7"
