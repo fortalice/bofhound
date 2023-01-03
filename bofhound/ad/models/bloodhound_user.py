@@ -18,7 +18,7 @@ class BloodHoundUser(BloodHoundObject):
         'highvalue', 'unconstraineddelegation', 'passwordnotreqd', 'enabled',
         'dontreqpreauth', 'sensitive', 'trustedtoauth', 'pwdneverexpires',
         'dontreqpreauth', 'pwdneverexpires', 'sensitive',
-        'serviceprincipalnames', 'hasspn', 'email'
+        'serviceprincipalnames', 'hasspn', 'email', 'memberof'
     ]
 
     def __init__(self, object=None):
