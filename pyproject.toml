@@ -14,7 +14,7 @@ include = ["CHANGELOG.md"]
 [tool.poetry.dependencies]
 python = "^3.9"
 click = "8.0.3"
-typer = "^0.4.0"
+typer = "^0.7.0"
 bloodhound = "1.2.1"
 cffi = "1.15.0"
 chardet = "4.0.0"
