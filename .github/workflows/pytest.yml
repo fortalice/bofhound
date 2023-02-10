@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: python:3.6
+    container: python:3.9
     steps:
       - uses: actions/checkout@v3
 

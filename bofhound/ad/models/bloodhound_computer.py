@@ -15,7 +15,8 @@ class BloodHoundComputer(BloodHoundObject):
         'pwdlastset', 'operatingsystem', 'description', 'operatingsystemservicepack',
         'msds-allowedtoactonbehalfofotheridentity', 'ms-mcs-admpwdexpirationtime',
         'domainsid', 'name', 'unconstraineddelegation', 'enabled',
-        'trustedtoauth', 'domain', 'highvalue', 'haslaps', 'serviceprincipalnames'
+        'trustedtoauth', 'domain', 'highvalue', 'haslaps', 'serviceprincipalnames',
+        'memberof'
     ]
 
     def __init__(self, object):

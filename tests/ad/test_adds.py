@@ -96,9 +96,9 @@ def test_import_objects_expectedValuesFromStandardDataSet(testdata_ldapsearchbof
     assert len(adds.SID_MAP) == 68
     assert len(adds.DN_MAP) == 68
     assert len(adds.DOMAIN_MAP) == 1
-    assert len(adds.users) == 4
+    assert len(adds.users) == 5
     assert len(adds.computers) == 4
-    assert len(adds.groups) == 54
+    assert len(adds.groups) == 53
     assert len(adds.domains) == 1
     assert len(adds.schemas) == 0
     assert len(adds.trustaccounts) == 0

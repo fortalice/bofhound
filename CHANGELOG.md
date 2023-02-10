@@ -1,4 +1,10 @@
 # Changelog
+## [v0.1.2] - 2/10/2023
+### Changed
+- Updated ACL parsing function to current version BloodHound.py
+- Updated `typer` and `bloodhound-python` dependencies
+- Added the `memberof` attrbute to the common properties displayed for users, computers and groups
+
 ## [v0.1.1] - 8/11/2022
 ### Fixed
 - Bug where domain trusts queried more than once would appear duplicated in the BH UI

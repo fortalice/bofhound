@@ -9,7 +9,7 @@ class BloodHoundGroup(BloodHoundObject):
         'distinguishedname', 'samaccountname', 'samaccounttype', 'objectsid',
         'member', 'admincount', 'description', 'whencreated',
         'name', 'domain', 'domainsid', 'distinguishedname', 'admincount',
-        'description', 'whencreated'
+        'description', 'whencreated', 'memberof'
     ]
 
     def __init__(self, object):

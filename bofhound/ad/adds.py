@@ -565,12 +565,15 @@ class ADDS():
                 writeprivs = ace_object.acedata.mask.has_priv(ACCESS_MASK.ADS_RIGHT_DS_WRITE_PROP)
                 if writeprivs:
                     # GenericWrite
-                    if entry._entry_type.lower() in ['user', 'group', 'computer'] and not ace_object.acedata.has_flag(ACCESS_ALLOWED_OBJECT_ACE.ACE_OBJECT_TYPE_PRESENT):
+                    if entry._entry_type.lower() in ['user', 'group', 'computer', 'gpo'] and not ace_object.acedata.has_flag(ACCESS_ALLOWED_OBJECT_ACE.ACE_OBJECT_TYPE_PRESENT):
                         relations.append(self.build_relation(entry, sid, 'GenericWrite', inherited=is_inherited))
                     if entry._entry_type.lower() == 'group' and can_write_property(ace_object, EXTRIGHTS_GUID_MAPPING['WriteMember']):
                         relations.append(self.build_relation(entry, sid, 'AddMember', '', inherited=is_inherited))
                     if entry._entry_type.lower() == 'computer' and can_write_property(ace_object, EXTRIGHTS_GUID_MAPPING['AllowedToAct']):
                         relations.append(self.build_relation(entry, sid, 'AddAllowedToAct', '', inherited=is_inherited))
+                    # Property set, but ignore Domain Admins since they already have enough privileges anyway
+                    if entry._entry_type.lower() == 'computer' and can_write_property(ace_object, EXTRIGHTS_GUID_MAPPING['UserAccountRestrictionsSet']) and not sid.endswith('-512'):
+                        relations.append(self.build_relation(entry, sid, 'WriteAccountRestrictions', '', inherited=is_inherited))
 
                     # Since 4.0
                     # Key credential link property write rights
@@ -604,13 +607,14 @@ class ADDS():
                     # All Extended
                     if entry._entry_type.lower() in ['user', 'domain'] and not ace_object.acedata.has_flag(ACCESS_ALLOWED_OBJECT_ACE.ACE_OBJECT_TYPE_PRESENT):
                         relations.append(self.build_relation(entry, sid, 'AllExtendedRights', '', inherited=is_inherited))
-                    if entry._entry_type.lower() == 'computer' and not ace_object.acedata.has_flag(ACCESS_ALLOWED_OBJECT_ACE.ACE_OBJECT_TYPE_PRESENT) and \
-                    'haslaps' in entry.Properties.keys():
+                    if entry._entry_type.lower() == 'computer' and not ace_object.acedata.has_flag(ACCESS_ALLOWED_OBJECT_ACE.ACE_OBJECT_TYPE_PRESENT):
                         relations.append(self.build_relation(entry, sid, 'AllExtendedRights', '', inherited=is_inherited))
                     if entry._entry_type.lower() == 'domain' and has_extended_right(ace_object, EXTRIGHTS_GUID_MAPPING['GetChanges']):
                         relations.append(self.build_relation(entry, sid, 'GetChanges', '', inherited=is_inherited))
                     if entry._entry_type.lower() == 'domain' and has_extended_right(ace_object, EXTRIGHTS_GUID_MAPPING['GetChangesAll']):
                         relations.append(self.build_relation(entry, sid, 'GetChangesAll', '', inherited=is_inherited))
+                    if entry._entry_type.lower() == 'domain' and has_extended_right(ace_object, EXTRIGHTS_GUID_MAPPING['GetChangesInFilteredSet']):
+                        relations.append(self.build_relation(entry, sid, 'GetChangesInFilteredSet', '', inherited=is_inherited))
                     if entry._entry_type.lower() == 'user' and has_extended_right(ace_object, EXTRIGHTS_GUID_MAPPING['UserForceChangePassword']):
                         relations.append(self.build_relation(entry, sid, 'ForceChangePassword', '', inherited=is_inherited))
 
@@ -618,6 +622,10 @@ class ADDS():
                 is_inherited = ace_object.has_flag(ACE.INHERITED_ACE)
                 mask = ace_object.acedata.mask
                 # ACCESS_ALLOWED_ACE
+                if not ace_object.has_flag(ACE.INHERITED_ACE) and ace_object.has_flag(ACE.INHERIT_ONLY_ACE):
+                    # ACE is set on this object, but only inherited, so not applicable to us
+                    continue
+
                 if mask.has_priv(ACCESS_MASK.GENERIC_ALL):
                     # Generic all includes all other rights, so skip from here
                     relations.append(self.build_relation(entry, sid, 'GenericAll', inherited=is_inherited))
@@ -625,7 +633,8 @@ class ADDS():
 
                 if mask.has_priv(ACCESS_MASK.ADS_RIGHT_DS_WRITE_PROP):
                     # Genericwrite is only for properties, don't skip after
-                    relations.append(self.build_relation(entry, sid, 'GenericWrite', inherited=is_inherited))
+                    if entry._entry_type.lower() in ['user', 'group', 'computer', 'gpo']:
+                        relations.append(self.build_relation(entry, sid, 'GenericWrite', inherited=is_inherited))
 
                 if mask.has_priv(ACCESS_MASK.WRITE_OWNER):
                     relations.append(self.build_relation(entry, sid, 'WriteOwner', inherited=is_inherited))
@@ -635,7 +644,7 @@ class ADDS():
                     relations.append(self.build_relation(entry, sid, 'AllExtendedRights', '', inherited=is_inherited))
 
                 if entry._entry_type.lower() == 'computer' and mask.has_priv(ACCESS_MASK.ADS_RIGHT_DS_CONTROL_ACCESS) and \
-                'haslaps' in entry.Properties.keys():
+                sid != "S-1-5-32-544" and not sid.endswith('-512'):
                     relations.append(self.build_relation(entry, sid, 'AllExtendedRights', '', inherited=is_inherited))
 
                 if mask.has_priv(ACCESS_MASK.WRITE_DACL):

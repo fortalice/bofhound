@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bofhound"
-version = "0.1.1"
+version = "0.1.2"
 description = "Parse output from common sources and transform it into BloodHound-ingestible data"
 authors = [
 	"Adam Brown",
@@ -14,8 +14,8 @@ include = ["CHANGELOG.md"]
 [tool.poetry.dependencies]
 python = "^3.9"
 click = "8.0.3"
-typer = "^0.4.0"
-bloodhound = "1.2.1"
+typer = "^0.7.0"
+bloodhound = "^1.6.0"
 cffi = "1.15.0"
 chardet = "4.0.0"
 cryptography = "36.0.1"
