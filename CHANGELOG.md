@@ -1,5 +1,5 @@
 # Changelog
-## [v0.1.2] - XX/XX/2023
+## [v0.1.2] - 2/10/2023
 ### Changed
 - Updated ACL parsing function to current version BloodHound.py
 - Updated `typer` and `bloodhound-python` dependencies
