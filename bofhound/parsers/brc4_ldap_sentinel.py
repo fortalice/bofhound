@@ -64,7 +64,9 @@ class Brc4LdapSentinelParser():
                 value = data[1].strip()
 
                 # BRc4 formats some timestamps for us that we need to revert to raw values
-                if attr in Brc4LdapSentinelParser.FORMATTED_TS_ATTRS and value != '0':
+                if attr in Brc4LdapSentinelParser.FORMATTED_TS_ATTRS:
+                    if value.lower() in ['never expires', 'value not set']:
+                        continue
                     timestamp_obj = dt.strptime(value, '%m/%d/%Y %I:%M:%S %p')
                     value = int((timestamp_obj - dt(1601, 1, 1)).total_seconds() * 10000000)
                 
@@ -76,6 +78,13 @@ class Brc4LdapSentinelParser():
                 # when our BH models expect commas
                 if attr in Brc4LdapSentinelParser.SEMICOLON_DELIMITED_ATTRS:
                     value = value.replace('; ', ', ')
+
+                # BRc4 puts the trustDirection attribute within securityidentifier
+                if attr == 'securityidentifier' and 'trustdirection' in value.lower():
+                    trust_direction = value.lower().split('trustdirection ')[1]
+                    current_object['trustdirection'] = trust_direction
+                    value = value.split('trustdirection: ')[0]
+                    continue
 
                 current_object[attr] = value
 
