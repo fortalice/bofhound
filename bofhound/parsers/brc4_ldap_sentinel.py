@@ -6,7 +6,7 @@ from datetime import datetime as dt
 # If field is empty, DO NOT WRITE IT TO FILE!
 
 class Brc4LdapSentinelParser():
-    # BRC4 LDAP Sentinel currently only queries attribute=* and objectClass 
+    # BRC4 LDAP Sentinel currently only queries attributes=["*""] and objectClass 
     # is always the top result. May need to be updated in the future.
     START_BOUNDARY = '[+] objectclass                        :'
     END_BOUNDARY = '+-------------------------------------------------------------------+'
@@ -70,7 +70,7 @@ class Brc4LdapSentinelParser():
                     timestamp_obj = dt.strptime(value, '%m/%d/%Y %I:%M:%S %p')
                     value = int((timestamp_obj - dt(1601, 1, 1)).total_seconds() * 10000000)
                 
-                # BRc4 formats some attributes with surroudning we need to remove {} 
+                # BRc4 formats some attributes with surroudning {} we need to remove
                 if attr in Brc4LdapSentinelParser.BRACKETED_ATTRS:
                     value = value[1:-1]
 
