@@ -659,6 +659,12 @@ class ADDS():
         if ADDS.AT_DISTINGUISHEDNAME in member.Properties.keys():
             if member.Properties["distinguishedname"] in group.MemberDNs:
                 return True
+            
+        # BRc4 does not use DN in groups' member attribute, so we have
+        # to check membership from the other side of the relationship
+        if ADDS.AT_DISTINGUISHEDNAME in group.Properties.keys():
+            if group.Properties["distinguishedname"] in member.MemberOfDNs:
+                return True
 
         if member.PrimaryGroupSid == group.ObjectIdentifier:
             return True
