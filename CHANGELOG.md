@@ -1,4 +1,13 @@
 # Changelog
+## [0.2.0] - 03/07/2023
+### Added
+- New parser to support parsing DAP Sentinel data from BRc4 logs
+
+### Changed
+- Modified logic for how group memberships are determined
+    - Prior method was iterate through DNs in groups' `member` attribute and adding objects with matching DNs
+    - Since BRc4 does not store DNs in the `member` attibute, added iteration over objects' `memberOf` attribute and add to groups with matching DN (i.e. membership is now calculated from both sides of relationship)
+
 ## [v0.1.2] - 2/10/2023
 ### Changed
 - Updated ACL parsing function to current version BloodHound.py
