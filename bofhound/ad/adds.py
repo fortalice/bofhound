@@ -676,6 +676,12 @@ class ADDS():
         try:
             if subgroup.Properties["distinguishedname"] in group.MemberDNs:
                 return True
+            
+            # BRc4 does not use DN in groups' member attribute, so we have
+            # to check membership from the other side of the relationship
+            if group.Properties["distinguishedname"] in subgroup.MemberOfDNs:
+                return True
+
         except:
             pass
         return False

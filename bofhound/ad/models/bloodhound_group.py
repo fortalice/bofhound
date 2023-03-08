@@ -21,6 +21,7 @@ class BloodHoundGroup(BloodHoundObject):
         self.IsDeleted = False
         self.IsACLProtected = False
         self.MemberDNs = []
+        self.MemberOfDNs = []
         self.IsACLProtected = False
 
         if 'distinguishedname' in object.keys() and 'samaccountname' in object.keys():
@@ -56,6 +57,11 @@ class BloodHoundGroup(BloodHoundObject):
 
         if 'ntsecuritydescriptor' in object.keys():
             self.RawAces = object['ntsecuritydescriptor']
+
+        if 'memberof' in object.keys():
+                self.MemberOfDNs = [f'CN={dn.upper()}' for dn in object.get('memberof').split(', CN=')]
+                if len(self.MemberOfDNs) > 0:
+                    self.MemberOfDNs[0] = self.MemberOfDNs[0][3:]
 
 
     def add_group_member(self, object, object_type):
