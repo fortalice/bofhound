@@ -21,7 +21,7 @@ class Brc4LdapSentinelParser():
     @staticmethod
     def parse_file(file):
 
-        with codecs.open(file, 'r', 'utf-8') as f:
+        with codecs.open(file, 'r', 'utf-8', errors='ignore') as f:
             return Brc4LdapSentinelParser.parse_data(f.read())
 
     @staticmethod
