@@ -11,7 +11,8 @@ class Brc4LdapSentinelParser():
     START_BOUNDARY = '[+] objectclass                        :'
     END_BOUNDARY = '+-------------------------------------------------------------------+'
 
-    FORMATTED_TS_ATTRS = ['lastlogontimestamp', 'lastlogon', 'lastlogoff', 'pwdlastset', 'accountexpires', 'whencreated', 'whenchanged']
+    FORMATTED_TS_ATTRS = ['lastlogontimestamp', 'lastlogon', 'lastlogoff', 'pwdlastset', 'accountexpires']
+    ISO_8601_TS_ATTRS = ['dscorepropagationdata', 'whenchanged', 'whencreated']
     BRACKETED_ATTRS = ['objectguid']
     SEMICOLON_DELIMITED_ATTRS = ['serviceprincipalname', 'memberof', 'member', 'objectclass']
 
@@ -69,6 +70,14 @@ class Brc4LdapSentinelParser():
                         continue
                     timestamp_obj = dt.strptime(value, '%m/%d/%Y %I:%M:%S %p')
                     value = int((timestamp_obj - dt(1601, 1, 1)).total_seconds() * 10000000)
+
+                if attr in Brc4LdapSentinelParser.ISO_8601_TS_ATTRS:
+                    formatted_ts = []
+                    for ts in value.split(';'):
+                        timestamp_obj = dt.strptime(ts.strip(), "%m/%d/%Y %I:%M:%S %p")
+                        timestamp_str = timestamp_obj.strftime("%Y%m%d%H%M%S.0Z")
+                        formatted_ts.append(timestamp_str)
+                    value = ', '.join(formatted_ts)
                 
                 # BRc4 formats some attributes with surroudning {} we need to remove
                 if attr in Brc4LdapSentinelParser.BRACKETED_ATTRS:
