@@ -6,9 +6,9 @@ from bofhound.ad.adds import ADDS
 from tests.test_data import *
 
 
-def test_parse_file_ldapsearchpyNormalFile(brc4ldapsentinel_standard_file_252):
-    parsed_objects = Brc4LdapSentinelParser.parse_file(brc4ldapsentinel_standard_file_252)
-    assert len(parsed_objects) == 252
+def test_parse_file_ldapsearchpyNormalFile(brc4ldapsentinel_standard_file_1030):
+    parsed_objects = Brc4LdapSentinelParser.parse_file(brc4ldapsentinel_standard_file_1030)
+    assert len(parsed_objects) == 1030
 
 
 def test_parse_data_computer():

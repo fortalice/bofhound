@@ -22,7 +22,7 @@ def main(
     debug: bool = typer.Option(False, "--debug", help="Enable debug output"),
     zip_files: bool = typer.Option(False, "--zip", "-z", help="Compress the JSON output files into a zip archive")):
     """
-    Generate BloodHound compatible JSON from logs written by ldapsearch BOF and pyldapsearch
+    Generate BloodHound compatible JSON from logs written by ldapsearch BOF, pyldapsearch and Brute Ratel's LDAP Sentinel
     """
 
     if debug:
