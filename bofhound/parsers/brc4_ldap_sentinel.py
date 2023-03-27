@@ -6,7 +6,7 @@ from datetime import datetime as dt
 # If field is empty, DO NOT WRITE IT TO FILE!
 
 class Brc4LdapSentinelParser():
-    # BRC4 LDAP Sentinel currently only queries attributes=["*""] and objectClass 
+    # BRC4 LDAP Sentinel currently only queries attributes=["*"] and objectClass 
     # is always the top result. May need to be updated in the future.
     START_BOUNDARY = '[+] objectclass                        :'
     END_BOUNDARY = '+-------------------------------------------------------------------+'
