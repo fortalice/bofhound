@@ -1,7 +1,7 @@
 # Changelog
-## [0.2.0] - 03/07/2023
+## [0.2.0] - 03/28/2023
 ### Added
-- New parser to support parsing DAP Sentinel data from BRc4 logs
+- New parser to support parsing LDAP Sentinel data from BRc4 logs
 
 ### Changed
 - Modified logic for how group memberships are determined
