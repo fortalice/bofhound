@@ -31,6 +31,7 @@ class BloodHoundUser(BloodHoundObject):
         self.SPNTargets = []
         self.HasSIDHistory = []
         self.IsACLProtected = False
+        self.MemberOfDNs = []
 
         if isinstance(object, dict):
             self.PrimaryGroupSid = self.get_primary_membership(object) # Returns none if not exist
@@ -114,6 +115,11 @@ class BloodHoundUser(BloodHoundObject):
 
             if 'ntsecuritydescriptor' in object.keys():
                 self.RawAces = object['ntsecuritydescriptor']
+
+            if 'memberof' in object.keys():
+                self.MemberOfDNs = [f'CN={dn.upper()}' for dn in object.get('memberof').split(', CN=')]
+                if len(self.MemberOfDNs) > 0:
+                    self.MemberOfDNs[0] = self.MemberOfDNs[0][3:]
 
 
     def to_json(self, only_common_properties=True):

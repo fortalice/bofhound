@@ -3,22 +3,26 @@ import logging
 import typer
 import glob
 import os
-from bofhound.parsers import LdapSearchBofParser
+from bofhound.parsers import LdapSearchBofParser, Brc4LdapSentinelParser
 from bofhound.writer import BloodHoundWriter
 from bofhound.ad import ADDS
 from bofhound import console
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(
+    add_completion=False,
+    rich_markup_mode="rich"
+)
 
 @app.command()
 def main(
-    input_files: str = typer.Option("/opt/cobaltstrike/logs", "--input", "-i", help="Directory or file containing logs of ldapsearch results"),
+    input_files: str = typer.Option("/opt/cobaltstrike/logs", "--input", "-i", help="Directory or file containing logs of ldapsearch results. Will default to [green]/opt/bruteratel/logs[/] if --brute-ratel is specified"),
     output_folder: str = typer.Option(".", "--output", "-o", help="Location to export bloodhound files"),
     all_properties: bool = typer.Option(False, "--all-properties", "-a", help="Write all properties to BloodHound files (instead of only common properties)"),
+    brute_ratel: bool = typer.Option(False, "--brute-ratel", help="Parse logs from Brute Ratel's LDAP Sentinel"),
     debug: bool = typer.Option(False, "--debug", help="Enable debug output"),
     zip_files: bool = typer.Option(False, "--zip", "-z", help="Compress the JSON output files into a zip archive")):
     """
-    Generate BloodHound compatible JSON from logs written by ldapsearch BOF and pyldapsearch
+    Generate BloodHound compatible JSON from logs written by ldapsearch BOF, pyldapsearch and Brute Ratel's LDAP Sentinel
     """
 
     if debug:
@@ -28,12 +32,21 @@ def main(
 
     banner()
 
+    # if BRc4 and input_files is the default, set it to the default BRc4 logs directory
+    if brute_ratel and input_files == "/opt/cobaltstrike/logs":
+        input_files = "/opt/bruteratel/logs"
+
+    # default to Cobalt logfile naming format
+    logfile_name_format = "beacon*.log"
+    if brute_ratel:
+        logfile_name_format = "b-*.log"
+
     if os.path.isfile(input_files):
         cs_logs = [input_files]
         logging.debug(f"Log file explicitly provided {input_files}")
     elif os.path.isdir(input_files):
         # recurisively get a list of all .log files in the input directory, sorted by last modified time
-        cs_logs = glob.glob(f"{input_files}/**/beacon*.log", recursive=True)
+        cs_logs = glob.glob(f"{input_files}/**/{logfile_name_format}", recursive=True)
         if len(cs_logs) == 0:
             # check for ldapsearch python logs
             cs_logs = glob.glob(f"{input_files}/pyldapsearch*.log", recursive=True)
@@ -49,11 +62,16 @@ def main(
         logging.error(f"Could not find {input_files} on disk")
         sys.exit(-1)
 
+    parser = LdapSearchBofParser
+    if brute_ratel:
+        logging.debug('Using Brute Ratel parser')
+        parser = Brc4LdapSentinelParser
+
     parsed_objects = []
     with console.status(f"", spinner="aesthetic") as status:
         for log in cs_logs:
             status.update(f" [bold] Parsing {log}")
-            new_objects = LdapSearchBofParser.parse_file(log)
+            new_objects = parser.parse_file(log)
             logging.debug(f"Parsed {log}")
             logging.debug(f"Found {len(new_objects)} objects in {log}")
             parsed_objects.extend(new_objects)

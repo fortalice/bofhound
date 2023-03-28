@@ -37,3 +37,9 @@ def testdata_ldapsearchbof_beacon_257_objects():
 def testdata_ldapsearchbof_beacon_202_objects():
     log_file = os.path.join(TEST_DATA_DIR, "ldapsearchbof_logs/beacon_202.log")
     yield LdapSearchBofParser.parse_file(log_file)
+
+
+# BRc4 LDAP Sentinel Fixtures
+@pytest.fixture
+def brc4ldapsentinel_standard_file_1030():
+    yield os.path.join(TEST_DATA_DIR, "brc4_ldap_sentinel_logs/badger_no_acl_1030_objects.log")

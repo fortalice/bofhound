@@ -659,6 +659,12 @@ class ADDS():
         if ADDS.AT_DISTINGUISHEDNAME in member.Properties.keys():
             if member.Properties["distinguishedname"] in group.MemberDNs:
                 return True
+            
+        # BRc4 does not use DN in groups' member attribute, so we have
+        # to check membership from the other side of the relationship
+        if ADDS.AT_DISTINGUISHEDNAME in group.Properties.keys():
+            if group.Properties["distinguishedname"] in member.MemberOfDNs:
+                return True
 
         if member.PrimaryGroupSid == group.ObjectIdentifier:
             return True
@@ -667,11 +673,16 @@ class ADDS():
 
 
     def _is_nested_group(self, subgroup, group):
-        try:
+        if ADDS.AT_DISTINGUISHEDNAME in subgroup.Properties.keys():
             if subgroup.Properties["distinguishedname"] in group.MemberDNs:
                 return True
-        except:
-            pass
+
+        if ADDS.AT_DISTINGUISHEDNAME in group.Properties.keys():    
+            # BRc4 does not use DN in groups' member attribute, so we have
+            # to check membership from the other side of the relationship
+            if group.Properties["distinguishedname"] in subgroup.MemberOfDNs:
+                return True
+            
         return False
 
 
