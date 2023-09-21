@@ -60,6 +60,28 @@ class LdapSearchBofParser():
                         # probably ran past the end of the iterable
                         break
 
+            # BEGIN FIX - bofhound crashes if it encounters an cobaltstrike task strings while parsing the ldapsearch data.
+
+            # If a user queues multiple commands while ldapsearch is running, the ldapresults may contain nested cobaltstrike output
+            # example: CobaltStrike logs queued task input between responses from the ldapsearch BOF
+
+            #nTSecurityDescriptor: B64ENCODEDBINARYDATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            #09/21 15:01:34 UTC [input] <user> ldapsearch "(&(objectClass=group)(name=Domain Users))" *,ntsecuritydescriptor 1 192.168.1.1 "DC=DOMAIN,DC=local"
+            #09/21 15:01:34 UTC [output]
+            #Running ldapsearch (T1018, T1069.002, T1087.002, T1087.003, T1087.004, T1482)
+            #
+            #09/21 15:01:34 UTC [task] <T1018, T1069.002, T1087.002, T1087.003, T1087.004, T1482> Running ldapsearch (T1018, T1069.002, T1087.002, T1087.003, T1087.004, T1482)
+            #09/21 15:01:41 UTC [output]
+            #received output:
+            #BACKHALFOFNTSECURITYDESCRIPTOR==
+            #name: Domain Admins
+
+            badPatterns = [ "^$",                           # Empty Line
+            "^\\d\\d/\\d\\d \\d\\d:\\d\\d:\\d\\d UTC ?",    # CobaltStrike queued command output: MM/DD HH:MM:SS UTC [input|task]
+            "^Running ldapsearch ?",                        # BOF Output
+            "^received output"                              # Start of next response
+            ]
+
             if (is_boundary_line):
                 if not in_result_region:
                     in_result_region = True
@@ -74,6 +96,10 @@ class LdapSearchBofParser():
                 in_result_region = False
                 current_object = None
                 continue
+            elif any (re.match(regex, line) for regex in badPatterns):
+                logging.debug('Skipping badPattern match in_result_region: %s', line)
+                continue
+            #   END FIX - bofhound crashes if it encounters an cobaltstrike task strings while parsing the ldapsearch data.
 
             data = line.split(': ')
 
