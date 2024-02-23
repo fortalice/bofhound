@@ -1,3 +1,5 @@
+# THIS REPO IS NO LONGER ACTIVE
+⛔🚧 This repo is no longer maintained. To submit an issue, pull request, or obtain the lastest version, reference [https://github.com/coffeegist/bofhound](https://github.com/coffeegist/bofhound) 🚧⛔
 ```
  _____________________________ __    __    ______    __    __   __   __   _______
 |   _   /  /  __   / |   ____/|  |  |  |  /  __  \  |  |  |  | |  \ |  | |       \
